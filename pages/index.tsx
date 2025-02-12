@@ -6,6 +6,7 @@ import Contact from "@/components/pages/index/contact"
 import Footer from "@/components/pages/index/footer"
 import { BackToTop } from "@/components/pages/index/back-to-top"
 import About from "@/components/pages/index/aboutus"
+import Testimonials from "@/components/pages/index/user"
 
 export default function Home() {
   return (  
@@ -22,6 +23,7 @@ export default function Home() {
         <Hero />
         <Projects />
         <Skills />
+        <Testimonials/>
         <About/>
         <Contact />
         <Footer />

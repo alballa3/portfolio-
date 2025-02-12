@@ -26,12 +26,12 @@ export default function About() {
     {
       icon: Trophy,
       label: "Projects Completed",
-      value: "50+",
+      value: "10+",
     },
     {
       icon: Calendar,
       label: "Years Experience",
-      value: "5+",
+      value: "3+",
     },
     {
       icon: Mail,
@@ -40,8 +40,8 @@ export default function About() {
     },
     {
       icon: MapPin,
-      label: "Countries Reached",
-      value: "10+",
+      label: "Helped Start Ups",
+      value: "5+",
     },
   ];
 

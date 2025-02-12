@@ -37,15 +37,11 @@ interface SocialLinkItem {
 
 const socialLinks: SocialLinkItem[] = [
   {
-    href: "https://github.com/alexchen",
+    href: "https://github.com/alballa3",
     icon: Github,
     label: "GitHub",
   },
-  {
-    href: "https://linkedin.com/in/alexchen",
-    icon: Linkedin,
-    label: "LinkedIn",
-  },
+  
 ];
 
 const Navbar: FC = () => {
@@ -101,9 +97,7 @@ const Navbar: FC = () => {
               </Button>
             </Link>
           ))}
-          <Button size="sm" className="transition-transform hover:scale-105">
-            Download CV
-          </Button>
+       
         </div>
 
         {/* Mobile Menu */}
@@ -134,7 +128,6 @@ const Navbar: FC = () => {
                       </Button>
                     </Link>
                   ))}
-                  <Button size="sm">Download CV</Button>
                 </div>
               </div>
             </nav>

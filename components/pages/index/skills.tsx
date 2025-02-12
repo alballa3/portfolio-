@@ -133,7 +133,7 @@ const SkillSection: React.FC<{
 
 export default function Skills() {
   return (
-    <section className="container py-24">
+    <section className="container py-24" id="skills">
       <div className="mx-auto max-w-7xl space-y-16">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
