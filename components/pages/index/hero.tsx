@@ -1,7 +1,8 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Github, Linkedin, Twitter } from 'lucide-react';
-import Image from 'next/image';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Github,  Linkedin, Twitter } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const HeroSection = () => {
   return (
@@ -12,27 +13,34 @@ const HeroSection = () => {
           {/* Text Content */}
           <div className="space-y-6 text-center md:text-left">
             <div className="inline-block rounded-full bg-primary/10 px-4 py-1.5">
-              <span className="text-sm font-medium text-primary">Available for work</span>
+              <span className="text-sm font-medium text-primary">
+                Available for work
+              </span>
             </div>
-            
+
             <h1 className="bg-gradient-to-r from-foreground via-foreground/80 to-foreground/40 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl">
               Hi, I'm Mohammed Elmuiz
             </h1>
-            
+
             <p className="max-w-[42rem] text-lg text-muted-foreground sm:text-xl sm:leading-8">
-              A passionate Full Stack Developer crafting exceptional digital experiences through innovative websites .
+              A passionate Full Stack Developer crafting exceptional digital
+              experiences through innovative websites .
             </p>
           </div>
 
           {/* Buttons */}
           <div className="flex flex-wrap gap-4">
-            <Button size="lg" className="group">
-              View Projects
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-            </Button>
-            <Button variant="outline" size="lg">
-              Contact Me
-            </Button>
+            <Link href="#projects">
+              <Button size="lg" className="group">
+                View Projects
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link href="#contact">
+              <Button variant="outline" size="lg">
+                Contact Me
+              </Button>
+            </Link>
           </div>
 
           {/* Social Links */}

@@ -35,33 +35,7 @@ const testimonials: Testimonial[] = [
       "Mohammed is one of the best developers I've ever worked with. His innovative design skills and technical expertise have consistently impressed me. ",
     image: "",
   },
-  {
-    id: 1,
-    name: "Soon",
-    position: "Soon",
-    company: "Soon",
-    testimonial:
-      "Soon",
-    image: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: 2,
-    name: "Soon",
-    position: "Soon",
-    company: "Soon",
-    testimonial:
-      "Soon",
-    image: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: 3,
-    name: "Soon",
-    position: "Soon",
-    company: "Soon",
-    testimonial:
-      "Soon",
-    image: "/placeholder.svg?height=100&width=100",
-  },
+
  
 ];
 

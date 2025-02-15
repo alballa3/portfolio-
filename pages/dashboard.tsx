@@ -1,6 +1,6 @@
 "use client";
 import { Bounce, ToastContainer, toast } from "react-toastify";
-
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -25,7 +25,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { PlusIcon, Pencil, Search } from "lucide-react";
+import {
+  PlusIcon,
+  Pencil,
+  Search,
+  Upload,
+  Info,
+  ListCheck,
+  Link2,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,29 +75,31 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [activeTab, setActiveTab] = useState("basic");
   useEffect(() => {
     const handleAuth = async () => {
       const { data } = await supabase.auth.getSession();
-      
+
       if (!data.session) {
         router.push("/");
       }
     };
     const handle = async () => {
-      const { data } = await supabase.from("projects").select("*");
+      const { data, error } = await supabase.from("projects").select("*");
 
       data?.map((project) => {
         project.tags = JSON.parse(project.tags);
         project.features = JSON.parse(project.features);
       });
+      console.log(data, error);
       setProjects(data as Project[]);
     };
     handleAuth();
     handle();
   }, []);
 
-  const handleAddOrUpdateProject = async () => {
+  const handleAddOrUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
     const add = {
       title: newProject.title,
       description: newProject.description,
@@ -99,18 +109,20 @@ export default function Dashboard() {
       features: JSON.stringify(newProject.features),
       image_url: newProject.image_url || null,
     };
-    const file_path = `project/${add.title}-${Date.now()}.${selectedImage?.name
+    const file_path = `project/${Date.now()}.${selectedImage?.name
       .split(".")
       .pop()}`;
     const { data, error } = await supabase.storage
       .from("project")
       .upload(file_path, selectedImage as File, { upsert: true });
+    console.log(error);
     const { data: imageurl } = supabase.storage
       .from("project")
       .getPublicUrl(file_path);
     add.image_url = imageurl?.publicUrl;
     const handle = await supabase.from("projects").insert(add);
-    if (handle.data) {
+
+    if (handle.error) {
       toast(handle.error?.message, {
         position: "top-right",
         autoClose: 5000,
@@ -122,6 +134,7 @@ export default function Dashboard() {
         theme: "dark",
         transition: Bounce,
       });
+      console.log(handle.error);
       return;
     }
     toast("Project Has been posted", {
@@ -249,17 +262,19 @@ export default function Dashboard() {
                       resetForm();
                       setIsDialogOpen(true);
                     }}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all duration-200"
                   >
-                    <PlusIcon className="mr-2 h-4 w-4" /> Add Project
+                    <PlusIcon className="mr-2 h-4 w-4" />
+                    Add Project
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-xl">
+
+                <DialogContent className="sm:max-w-3xl bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">
+                    <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
                       {editingProject ? "Edit Project" : "Add New Project"}
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-gray-600 dark:text-gray-400">
                       {editingProject
                         ? "Update the details of your project below."
                         : "Fill out the form to add your new project."}
@@ -270,183 +285,308 @@ export default function Dashboard() {
                     onSubmit={handleAddOrUpdateProject}
                     className="space-y-6"
                   >
-                    {/* Form fields remain the same but with improved spacing */}
-                    <div className="space-y-8">
-                      {/* Title */}
-                      <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                        <Label htmlFor="title" className="sm:text-right">
-                          Title
-                        </Label>
-                        <Input
-                          id="title"
-                          value={newProject.title}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              title: e.target.value,
-                            })
-                          }
-                          className="sm:col-span-3"
-                          placeholder="Project Title"
-                        />
-                      </div>
-
-                      {/* Description */}
-                      <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
-                        <Label
-                          htmlFor="description"
-                          className="sm:text-right pt-2"
+                    <Tabs
+                      value={activeTab}
+                      onValueChange={setActiveTab}
+                      className="w-full"
+                    >
+                      <TabsList className="grid grid-cols-4 gap-4 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+                        <TabsTrigger
+                          value="basic"
+                          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
                         >
-                          Description
-                        </Label>
-                        <Textarea
-                          id="description"
-                          value={newProject.description}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              description: e.target.value,
-                            })
+                          <Info className="w-4 h-4 mr-2" />
+                          Basic Info
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="media"
+                          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Media
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="links"
+                          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                        >
+                          <Link2 className="w-4 h-4 mr-2" />
+                          Links
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="details"
+                          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                        >
+                          <ListCheck className="w-4 h-4 mr-2" />
+                          Details
+                        </TabsTrigger>
+                      </TabsList>
+
+                      <div className="mt-6">
+                        <TabsContent value="basic" className="space-y-6">
+                          {/* Basic Info Tab */}
+                          <div className="space-y-6">
+                            <Card className="p-6 transition-all duration-200">
+                              <div className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                                  <Label
+                                    htmlFor="title"
+                                    className="sm:text-right font-medium"
+                                  >
+                                    Title
+                                  </Label>
+                                  <Input
+                                    id="title"
+                                    value={newProject.title}
+                                    onChange={(e) =>
+                                      setNewProject({
+                                        ...newProject,
+                                        title: e.target.value,
+                                      })
+                                    }
+                                    className="sm:col-span-3 focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                                    placeholder="Enter your project title"
+                                  />
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                                  <Label
+                                    htmlFor="description"
+                                    className="sm:text-right font-medium pt-2"
+                                  >
+                                    Description
+                                  </Label>
+                                  <Textarea
+                                    id="description"
+                                    value={newProject.description}
+                                    onChange={(e) =>
+                                      setNewProject({
+                                        ...newProject,
+                                        description: e.target.value,
+                                      })
+                                    }
+                                    className="sm:col-span-3 min-h-[120px] focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                                    placeholder="Provide a brief overview of your project"
+                                  />
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                                  <Label
+                                    htmlFor="tags"
+                                    className="sm:text-right font-medium"
+                                  >
+                                    Tags
+                                  </Label>
+                                  <Input
+                                    id="tags"
+                                    value={newProject.tags.join(", ")}
+                                    onChange={(e) =>
+                                      setNewProject({
+                                        ...newProject,
+                                        tags: e.target.value
+                                          .split(",")
+                                          .map((tag) => tag.trim()),
+                                      })
+                                    }
+                                    className="sm:col-span-3 focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                                    placeholder="React, TypeScript, Tailwind"
+                                  />
+                                </div>
+                              </div>
+                            </Card>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="media" className="space-y-6">
+                          {/* Media Tab */}
+                          <Card className="p-6">
+                            <div className="space-y-4">
+                              <Label className="text-lg font-medium">
+                                Project Image
+                              </Label>
+                              <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-indigo-500 transition-all duration-200">
+                                <Input
+                                  id="image"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageChange}
+                                  ref={fileInputRef}
+                                  className="hidden"
+                                />
+                                <div className="space-y-4">
+                                  <div className="flex flex-col items-center">
+                                    <Upload className="h-12 w-12 text-gray-400" />
+                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                      Drag and drop your image here, or
+                                    </p>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() =>
+                                        fileInputRef.current?.click()
+                                      }
+                                      className="mt-2"
+                                    >
+                                      Browse Files
+                                    </Button>
+                                  </div>
+                                  {selectedImage && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      Selected: {selectedImage.name}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        </TabsContent>
+
+                        <TabsContent value="links" className="space-y-6">
+                          {/* Links Tab */}
+                          <Card className="p-6">
+                            <div className="space-y-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                                <Label
+                                  htmlFor="github"
+                                  className="sm:text-right font-medium"
+                                >
+                                  GitHub URL
+                                </Label>
+                                <Input
+                                  id="github"
+                                  value={newProject.github}
+                                  onChange={(e) =>
+                                    setNewProject({
+                                      ...newProject,
+                                      github: e.target.value,
+                                    })
+                                  }
+                                  className="sm:col-span-3 focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                                  placeholder="https://github.com/username/project"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                                <Label
+                                  htmlFor="live"
+                                  className="sm:text-right font-medium"
+                                >
+                                  Live URL
+                                </Label>
+                                <Input
+                                  id="live"
+                                  value={newProject.live}
+                                  onChange={(e) =>
+                                    setNewProject({
+                                      ...newProject,
+                                      live: e.target.value,
+                                    })
+                                  }
+                                  className="sm:col-span-3 focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                                  placeholder="https://your-project.com"
+                                />
+                              </div>
+                            </div>
+                          </Card>
+                        </TabsContent>
+
+                        <TabsContent value="details" className="space-y-6">
+                          {/* Details Tab */}
+                          <Card className="p-6">
+                            <div className="space-y-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                                <Label
+                                  htmlFor="details"
+                                  className="sm:text-right font-medium pt-2"
+                                >
+                                  Details
+                                </Label>
+                                <Textarea
+                                  id="details"
+                                  value={newProject.details}
+                                  onChange={(e) =>
+                                    setNewProject({
+                                      ...newProject,
+                                      details: e.target.value,
+                                    })
+                                  }
+                                  className="sm:col-span-3 min-h-[120px] focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                                  placeholder="Share comprehensive details about your project"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                                <Label
+                                  htmlFor="features"
+                                  className="sm:text-right font-medium pt-2"
+                                >
+                                  Features
+                                </Label>
+                                <Textarea
+                                  id="features"
+                                  value={newProject.features.join("\n")}
+                                  onChange={(e) =>
+                                    setNewProject({
+                                      ...newProject,
+                                      features: e.target.value.split("\n"),
+                                      // .filter(Boolean),
+                                    })
+                                  }
+                                  className="sm:col-span-3 min-h-[120px] focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                                  placeholder="List each feature on a new line"
+                                />
+                              </div>
+                            </div>
+                          </Card>
+                        </TabsContent>
+                      </div>
+                    </Tabs>
+
+                    <DialogFooter className="mt-6">
+                      <div className="flex gap-4 w-full sm:w-auto">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            setActiveTab(
+                              activeTab === "basic"
+                                ? "basic"
+                                : activeTab === "media"
+                                ? "basic"
+                                : activeTab === "links"
+                                ? "media"
+                                : "links"
+                            )
                           }
-                          className="sm:col-span-3 min-h-[100px]"
-                          placeholder="Short project description"
-                        />
-                      </div>
-
-                      {/* Image Upload */}
-                      <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                        <Label htmlFor="image" className="sm:text-right">
-                          Image
-                        </Label>
-                        <div className="sm:col-span-3 space-y-2">
-                          <Input
-                            id="image"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            ref={fileInputRef}
-                            className="cursor-pointer"
-                          />
-                          {selectedImage && (
-                            <p className="text-sm text-muted-foreground">
-                              Selected: {selectedImage.name}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* URLs */}
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                          <Label htmlFor="github" className="sm:text-right">
-                            GitHub URL
-                          </Label>
-                          <Input
-                            id="github"
-                            value={newProject.github}
-                            onChange={(e) =>
-                              setNewProject({
-                                ...newProject,
-                                github: e.target.value,
-                              })
+                          className="flex-1 sm:flex-none"
+                          disabled={activeTab === "basic"}
+                        >
+                          Previous
+                        </Button>
+                        {activeTab !== "details" ? (
+                          <Button
+                            type="button"
+                            onClick={() =>
+                              setActiveTab(
+                                activeTab === "basic"
+                                  ? "media"
+                                  : activeTab === "media"
+                                  ? "links"
+                                  : "details"
+                              )
                             }
-                            className="sm:col-span-3"
-                            placeholder="https://github.com/username/project"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                          <Label htmlFor="live" className="sm:text-right">
-                            Live URL
-                          </Label>
-                          <Input
-                            id="live"
-                            value={newProject.live}
-                            onChange={(e) =>
-                              setNewProject({
-                                ...newProject,
-                                live: e.target.value,
-                              })
-                            }
-                            className="sm:col-span-3"
-                            placeholder="https://projectlive.com"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Tags */}
-                      <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                        <Label htmlFor="tags" className="sm:text-right">
-                          Tags
-                        </Label>
-                        <Input
-                          id="tags"
-                          value={newProject.tags.join(", ")}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              tags: e.target.value
-                                .split(",")
-                                .map((tag) => tag.trim()),
-                            })
-                          }
-                          className="sm:col-span-3"
-                          placeholder="e.g. React, Node, Tailwind"
-                        />
-                      </div>
-
-                      {/* Details and Features */}
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
-                          <Label
-                            htmlFor="details"
-                            className="sm:text-right pt-2"
+                            className="flex-1 sm:flex-none bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
                           >
-                            Details
-                          </Label>
-                          <Textarea
-                            id="details"
-                            value={newProject.details}
-                            onChange={(e) =>
-                              setNewProject({
-                                ...newProject,
-                                details: e.target.value,
-                              })
-                            }
-                            className="sm:col-span-3 min-h-[100px]"
-                            placeholder="Additional details about the project"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
-                          <Label
-                            htmlFor="features"
-                            className="sm:text-right pt-2"
+                            Next
+                          </Button>
+                        ) : (
+                          <Button
+                            type="submit"
+                            className="flex-1 sm:flex-none bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
                           >
-                            Features
-                          </Label>
-                          <Textarea
-                            id="features"
-                            value={newProject.features.join("\n")}
-                            onChange={(e) =>
-                              setNewProject({
-                                ...newProject,
-                                features: e.target.value
-                                  .split("\n")
-                                  .filter(Boolean),
-                              })
-                            }
-                            className="sm:col-span-3 min-h-[100px]"
-                            placeholder="List each feature on a new line"
-                          />
-                        </div>
+                            {editingProject ? "Update Project" : "Save Project"}
+                          </Button>
+                        )}
                       </div>
-                    </div>
-
-                    <DialogFooter>
-                      <Button type="submit" className="w-full sm:w-auto">
-                        {editingProject ? "Update Project" : "Save Project"}
-                      </Button>
                     </DialogFooter>
                   </form>
                 </DialogContent>

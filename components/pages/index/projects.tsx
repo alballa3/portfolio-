@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -15,40 +15,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Github, ExternalLink, ChevronRight, ArrowRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface Project {
   title: string;
   description: string;
-  image: string;
-  github?: string;
-  live?: string;
+  image_url: string;
+  github_url?: string;
+  live_url?: string;
   tags: string[];
   details: string;
   features: string[];
 }
 
-const projects: Project[] = [
-  {
-    title: "E-commerce Platform",
-    description:
-      "A full-stack e-commerce solution with React, Node.js, and MongoDB.",
-    image: "/placeholder.svg?height=400&width=600",
-    github: "https://github.com/alexchen/ecommerce",
-    live: "https://alexchen-ecommerce.vercel.app",
-    tags: ["React", "Node.js", "MongoDB", "Express"],
-    details:
-      "This e-commerce platform provides a seamless shopping experience with features like user authentication, product search, shopping cart, and secure checkout. The React frontend offers a responsive design, while the Node.js backend handles data management and integrates with MongoDB for efficient storage.",
-    features: [
-      "User authentication and authorization",
-      "Product catalog with search and filter functionality",
-      "Shopping cart and wishlist management",
-      "Secure payment integration",
-      "Order tracking and history",
-      "Admin dashboard for inventory management",
-    ],
-  },
-  // ... other projects remain the same
-];
+
 
 interface ProjectCardProps {
   project: Project;
@@ -56,7 +36,11 @@ interface ProjectCardProps {
   onClick: (project: Project) => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, onClick }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project,
+  index,
+  onClick,
+}) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -73,7 +57,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, onClick }) =>
           >
             <div className="relative w-full lg:w-1/2 overflow-hidden">
               <Image
-                src={project.image}
+                src={project?.image_url}
                 alt={project.title}
                 width={600}
                 height={400}
@@ -82,7 +66,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, onClick }) =>
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-background/0" />
             </div>
             <div className="w-full lg:w-1/2 p-6 space-y-4">
-              <h3 className="text-2xl font-bold tracking-tight">{project.title}</h3>
+              <h3 className="text-2xl font-bold tracking-tight">
+                {project.title}
+              </h3>
               <p className="text-muted-foreground">{project.description}</p>
               <div className="flex flex-wrap gap-2">
                 {project.tags.map((tag) => (
@@ -100,10 +86,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, onClick }) =>
                   View Details
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
-                {project.github && (
+                {project.github_url && (
                   <Button variant="outline" asChild>
                     <a
-                      href={project.github}
+                      href={project.github_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="transition-colors hover:bg-primary/10"
@@ -113,10 +99,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, onClick }) =>
                     </a>
                   </Button>
                 )}
-                {project.live && (
+                {project.live_url && (
                   <Button variant="outline" asChild>
                     <a
-                      href={project.live}
+                      href={project.live_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="transition-colors hover:bg-primary/10"
@@ -138,7 +124,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, onClick }) =>
 const Projects: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-
+  const [projects, setProjects] = useState<Project[]>([]);
+  useEffect(() => {
+    const handle=async () => {
+      const {data,error}=await supabase.from('projects').select('*');
+      
+      data?.map((project) => {
+        project.tags = JSON.parse(project.tags);
+        project.features = JSON.parse(project.features);
+      });
+      console.log(data,error);
+      setProjects(data as Project[]);
+    }
+    handle();
+  },[])
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
     setIsOpen(true);
@@ -155,7 +154,8 @@ const Projects: React.FC = () => {
           Featured Projects
         </h2>
         <p className="mt-4 text-muted-foreground sm:text-lg">
-          Here are some of the projects I've worked on. Each one represents a unique challenge and learning experience.
+          Here are some of the projects I've worked on. Each one represents a
+          unique challenge and learning experience.
         </p>
       </motion.div>
 
@@ -196,10 +196,10 @@ const Projects: React.FC = () => {
             </ul>
           </div>
           <div className="flex justify-between mt-6">
-            {selectedProject?.github && (
+            {selectedProject?.github_url && (
               <Button variant="outline" size="sm" asChild>
                 <a
-                  href={selectedProject.github}
+                  href={selectedProject.github_url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -208,10 +208,10 @@ const Projects: React.FC = () => {
                 </a>
               </Button>
             )}
-            {selectedProject?.live && (
+            {selectedProject?.live_url && (
               <Button variant="outline" size="sm" asChild>
                 <a
-                  href={selectedProject.live}
+                  href={selectedProject.live_url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
