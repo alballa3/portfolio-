@@ -41,7 +41,7 @@ const INITIAL_FORM_STATE: FormData = {
   message: ""
 };
 
-export default function Contact(): JSX.Element {
+export default function Contact() {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_STATE);
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
